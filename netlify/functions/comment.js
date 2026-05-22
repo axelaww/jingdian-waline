@@ -19337,11 +19337,11 @@ async function handleGetComments(event) {
     var offset = (page - 1) * pageSize;
     conn = await getPool().getConnection();
     var [rows] = await conn.query(
-      "SELECT object_id as objectId, nick, mail, link, comment, inserted_at as insertedAt, pid, rid, ua, ip, sticky, status FROM wl_Comment WHERE url = ? ORDER BY inserted_at DESC LIMIT ? OFFSET ?",
+      "SELECT object_id as objectId, nick, mail, link, comment, inserted_at as insertedAt, pid, rid, ua, ip, sticky, status FROM wl_comment WHERE url = ? ORDER BY inserted_at DESC LIMIT ? OFFSET ?",
       [uri, pageSize, offset]
     );
     var [countResult] = await conn.query(
-      "SELECT COUNT(*) as total FROM wl_Comment WHERE url = ?",
+      "SELECT COUNT(*) as total FROM wl_comment WHERE url = ?",
       [uri]
     );
     var total = countResult[0].total;
@@ -19379,7 +19379,7 @@ async function handlePostComment(body, event) {
     }
     conn = await getPool().getConnection();
     var [result] = await conn.query(
-      "INSERT INTO wl_Comment (object_id, url, nick, mail, link, comment, pid, rid, ua, ip, status, sticky) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO wl_comment (object_id, url, nick, mail, link, comment, pid, rid, ua, ip, status, sticky) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [uri, uri, nick, mail, link, comment, pid, rid, ua, ip, "approved", 0]
     );
     conn.release();
@@ -19417,16 +19417,16 @@ async function handleCounter(body) {
       var reaction = body.reaction || "";
       var inc = body.action === "inc" ? 1 : -1;
       await conn.query(
-        "UPDATE wl_Counter SET time = time + ? WHERE url = ? AND type = ?",
+        "UPDATE wl_counter SET time = time + ? WHERE url = ? AND type = ?",
         [inc, uri, type]
       );
       var [rows] = await conn.query(
-        "SELECT time FROM wl_Counter WHERE url = ? AND type = ?",
+        "SELECT time FROM wl_counter WHERE url = ? AND type = ?",
         [uri, type]
       );
       if (rows.length === 0) {
         await conn.query(
-          "INSERT INTO wl_Counter (url, type, time) VALUES (?, ?, 1)",
+          "INSERT INTO wl_counter (url, type, time) VALUES (?, ?, 1)",
           [uri, type]
         );
         conn.release();
@@ -19436,23 +19436,23 @@ async function handleCounter(body) {
       return json({ errno: 0, data: { time: rows[0].time } });
     } else {
       var [rows] = await conn.query(
-        "SELECT time FROM wl_Counter WHERE url = ? AND type = ?",
+        "SELECT time FROM wl_counter WHERE url = ? AND type = ?",
         [uri, type]
       );
       if (rows.length === 0) {
         await conn.query(
-          "INSERT INTO wl_Counter (url, type, time) VALUES (?, ?, 1)",
+          "INSERT INTO wl_counter (url, type, time) VALUES (?, ?, 1)",
           [uri, type]
         );
         conn.release();
         return json({ errno: 0, data: { time: 1 } });
       }
       await conn.query(
-        "UPDATE wl_Counter SET time = time + 1 WHERE url = ? AND type = ?",
+        "UPDATE wl_counter SET time = time + 1 WHERE url = ? AND type = ?",
         [uri, type]
       );
       var [updated] = await conn.query(
-        "SELECT time FROM wl_Counter WHERE url = ? AND type = ?",
+        "SELECT time FROM wl_counter WHERE url = ? AND type = ?",
         [uri, type]
       );
       conn.release();
@@ -19474,7 +19474,7 @@ async function handleGetCounter(event) {
     }
     conn = await getPool().getConnection();
     var [rows] = await conn.query(
-      "SELECT type, time FROM wl_Counter WHERE url = ?",
+      "SELECT type, time FROM wl_counter WHERE url = ?",
       [uri]
     );
     conn.release();
