@@ -1,0 +1,11 @@
+{
+  "name": "jingdian-waline",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}
