@@ -19337,11 +19337,11 @@ async function handleGetComments(event) {
     var offset = (page - 1) * pageSize;
     conn = await getPool().getConnection();
     var [rows] = await conn.query(
-      "SELECT object_id as objectId, nick, mail, link, comment, inserted_at as insertedAt, pid, rid, ua, ip, sticky, status FROM wl_comment WHERE url = ? ORDER BY inserted_at DESC LIMIT ? OFFSET ?",
+      "SELECT id, object_id as objectId, nick, mail, link, comment, created_at as insertedAt, rid, ua, ip, status FROM wl_comment WHERE object_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
       [uri, pageSize, offset]
     );
     var [countResult] = await conn.query(
-      "SELECT COUNT(*) as total FROM wl_comment WHERE url = ?",
+      "SELECT COUNT(*) as total FROM wl_comment WHERE object_id = ?",
       [uri]
     );
     var total = countResult[0].total;
@@ -19379,8 +19379,8 @@ async function handlePostComment(body, event) {
     }
     conn = await getPool().getConnection();
     var [result] = await conn.query(
-      "INSERT INTO wl_comment (object_id, url, nick, mail, link, comment, pid, rid, ua, ip, status, sticky) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [uri, uri, nick, mail, link, comment, pid, rid, ua, ip, "approved", 0]
+      "INSERT INTO wl_comment (object_id, nick, mail, link, comment, rid, ua, ip, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [uri, nick, mail, link, comment, rid, ua, ip, "approved"]
     );
     conn.release();
     return json({
@@ -19391,11 +19391,9 @@ async function handlePostComment(body, event) {
         mail,
         link,
         comment,
-        pid,
         rid,
         insertedAt: (/* @__PURE__ */ new Date()).toISOString(),
-        status: "approved",
-        sticky: 0
+        status: "approved"
       }
     });
   } catch (err) {
